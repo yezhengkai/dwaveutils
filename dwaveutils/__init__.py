@@ -1,1 +1,1 @@
-from . import bl_lstsq
+from . import bl_lstsq, inverse
