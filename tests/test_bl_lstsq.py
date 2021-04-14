@@ -2,8 +2,9 @@ from collections import defaultdict
 
 import numpy as np
 import pytest
-from dwaveutils import bl_lstsq
 from numpy.testing import assert_array_equal
+
+from dwaveutils import bl_lstsq
 
 
 def test_discretize_matrix():
