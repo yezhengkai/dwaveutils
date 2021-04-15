@@ -2,7 +2,7 @@
 # https://github.com/sygreer/QuantumAnnealingInversion.jl/blob/main/src/QuantumAnnealingInversion.jl
 import warnings
 from collections import defaultdict
-from typing import Callable, Tuple, Union
+from typing import Any, Callable, Tuple, Union
 
 import numpy as np
 from dimod.meta import SamplerABCMeta
@@ -145,6 +145,8 @@ def flipBits(k0: np.ndarray, q: np.ndarray) -> np.ndarray:
     numpy.ndarray
         updated guess
     """
+    assert np.isin(k0, [0, 1]).all(), "The elements in the k0 array must be 0 or 1"
+    assert np.isin(q, [0, 1]).all(), "The elements in the q array must be 0 or 1"
     return abs(k0 - q)
 
 
@@ -312,7 +314,9 @@ def getPermutationsDwave(forwardModel, Q, hhat, initGuess, kl, kh, inum, lvals, 
     return kbs.astype(float, copy=False), norm, nlObj, idxMinVal
 
 
-def getDwaveAnswer(Q_mat: np.ndarray, num_reads: int = 10000, sampler: Union[str, SamplerABCMeta] = "SA") -> np.ndarray:
+def getDwaveAnswer(
+    Q_mat: np.ndarray, num_reads: int = 10000, sampler: Union[str, SamplerABCMeta, Any] = "SA"
+) -> np.ndarray:
     """Get the answers from the D-Wave.
 
     Parameters
@@ -321,34 +325,37 @@ def getDwaveAnswer(Q_mat: np.ndarray, num_reads: int = 10000, sampler: Union[str
         Q matrix
     num_reads : int, optional
         Number of reads, by default 10000
-    sampler : str or SamplerABCMeta, optional
+    sampler : str or SamplerABCMeta or Any, optional
         Choose sampler, by default SA
 
     Returns
     -------
     numpy.ndarray
-        kbs solutions
+        kbs solutions, shape is [num_bits, num_reads]
     """
     Q_dict = defaultdict(int)
     for i in range(Q_mat.shape[0]):
         for j in range(Q_mat.shape[1]):
             Q_dict[(i, j)] = Q_mat[i, j]
 
-    if sampler.upper() == "SA":
-        sampler = SimulatedAnnealingSampler()
-    elif sampler.upper() == "QA":
-        sampler = EmbeddingComposite(DWaveSampler())
+    # instantiate an object with `sample_qubo` method
+    if isinstance(sampler, str) and sampler.upper() == "SA":
+        _sampler = SimulatedAnnealingSampler()
+    elif isinstance(sampler, str) and sampler.upper() == "QA":
+        _sampler = EmbeddingComposite(DWaveSampler())
     elif isinstance(sampler, SamplerABCMeta):
         try:
-            sampler = EmbeddingComposite(sampler())
+            _sampler = EmbeddingComposite(sampler())
         except ValueError:
-            sampler = sampler()
+            _sampler = sampler()
+    elif hasattr(sampler, "sample_qubo"):
+        _sampler = sampler
     else:
         warnings.warn("Wrong sampler, use DWaveSampler instead!")
-        sampler = EmbeddingComposite(DWaveSampler())
+        _sampler = EmbeddingComposite(DWaveSampler())
 
-    sampleset = sampler.sample_qubo(Q_dict, num_reads=num_reads)
-    kbs = sampleset.record.sample.T
+    sampleset = _sampler.sample_qubo(Q_dict, num_reads=num_reads)
+    kbs = sampleset.record.sample.T  # [num_bits, num_reads]
     return kbs
 
 
