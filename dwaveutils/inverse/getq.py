@@ -123,7 +123,6 @@ def getQ(
     h0 = geth0(forwardModel, initGuess, kl, kh, inum, lvals)
     kjGuess = b2f(initGuess, kl, kh)  # convert to actual perm
     F = getF(forwardModel, kjGuess, kl, kh, inum, lvals)
-    print(F)
     Q = qubo(hhat, F, h0)  # get Q matrix
     print("Done.", end="\n\n")
     return Q
