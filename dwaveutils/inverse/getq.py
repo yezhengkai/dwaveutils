@@ -30,7 +30,7 @@ def qubo(hhat: np.ndarray, F: np.ndarray, h0: np.ndarray) -> np.ndarray:
 
     for i in range(Q.shape[0]):
         Q2[i, i] = Q[i, i]
-        for j in range(1, i - 1):
+        for j in range(i):
             Q2[i, j] = Q[i, j] + Q[j, i]
     return Q2.T
 
