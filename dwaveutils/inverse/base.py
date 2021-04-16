@@ -9,8 +9,7 @@ from dimod.meta import SamplerABCMeta
 from dwave.system import DWaveSampler, EmbeddingComposite
 from neal import SimulatedAnnealingSampler
 
-from dwaveutils.utils import Binary2Float
-
+from ..utils import Binary2Float
 from .helper import checkObj
 
 
