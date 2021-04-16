@@ -1,6 +1,5 @@
 from . import base, getq, helper
 from .base import (
-    b2f,
     flipBits,
     getDwaveAnswer,
     geth0,

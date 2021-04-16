@@ -9,6 +9,8 @@ from dimod.meta import SamplerABCMeta
 from dwave.system import DWaveSampler, EmbeddingComposite
 from neal import SimulatedAnnealingSampler
 
+from dwaveutils.utils import Binary2Float
+
 from .helper import checkObj
 
 
@@ -42,40 +44,13 @@ def geth0(
     np.ndarray
         measured head values
     """
-    kjGuess = b2f(soln, kl, kh)  # convert to actual perm
+    kjGuess = Binary2Float.to_two_value(soln, kl, kh)  # convert to actual perm
     kiGuess = kinn(kjGuess, inum)  # interpolate
     hGuess = forwardModel(kiGuess)  # forward model to get head
     if lvals is None:
         return hGuess
     else:
         return hGuess[lvals]  # get initial head value
-
-
-def b2f(kb: np.ndarray, klow: float, khigh: float) -> np.ndarray:
-    """Convert binary value to floating point.
-
-    Parameters
-    ----------
-    kb : numpy.ndarray
-        binary representation of permeability
-    klow : float
-        low permeability
-    khigh : float
-        high permeability
-
-    Returns
-    -------
-    ks : numpy.ndarray
-        permeability
-    """
-    # ks = np.empty(len(kb))
-    # for i in range(len(kb)):
-    #     if kb[i] == 1:
-    #         ks[i] = khigh
-    #     else:
-    #         ks[i] = klow
-    ks = np.array(kb * khigh - (kb - 1) * klow)
-    return ks
 
 
 def kinn(kj: np.ndarray, inum: int) -> np.ndarray:

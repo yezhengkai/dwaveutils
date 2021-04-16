@@ -5,7 +5,8 @@ from typing import Callable
 
 import numpy as np
 
-from .base import b2f, geth0, kinn
+from ..utils import Binary2Float
+from .base import geth0, kinn
 
 
 def qubo(hhat: np.ndarray, F: np.ndarray, h0: np.ndarray) -> np.ndarray:
@@ -121,7 +122,7 @@ def getQ(
     """
     print("Calculating Q...")
     h0 = geth0(forwardModel, initGuess, kl, kh, inum, lvals)
-    kjGuess = b2f(initGuess, kl, kh)  # convert to actual perm
+    kjGuess = Binary2Float.to_two_value(initGuess, kl, kh)  # convert to actual perm
     F = getF(forwardModel, kjGuess, kl, kh, inum, lvals)
     Q = qubo(hhat, F, h0)  # get Q matrix
     print("Done.", end="\n\n")
