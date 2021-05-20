@@ -1,4 +1,4 @@
-from . import base, getq, helper
+from . import base, getq, helper, utils, solver, interpolate
 from .base import (
     flipBits,
     getDwaveAnswer,
