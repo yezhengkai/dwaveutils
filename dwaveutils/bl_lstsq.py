@@ -8,6 +8,10 @@ import numpy as np
 from scipy.sparse import diags, dok_matrix
 from tqdm import tqdm
 
+# TODO: mkdir 'bl_lstsq' and let it a python module
+# TODO: mv bl_lstsq.py bl_lstsq/utils.py
+# TODO: mv solver class to bl_lstsq/solver.py
+
 
 def discretize_matrix(matrix, bit_value):
     return np.kron(matrix, bit_value)
