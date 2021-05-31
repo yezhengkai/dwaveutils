@@ -14,7 +14,7 @@ class Binary2Float(object):
         binary : np.ndarray
             Binary array.
         bit_value : np.ndarray
-            [description]
+            For constructing fixed-point value.
 
         Returns
         -------
