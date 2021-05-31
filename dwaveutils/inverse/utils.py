@@ -10,29 +10,6 @@ import scipy.sparse as sp
 from ..utils import Binary2Float
 
 
-# TODO: replace dwave.inverse.helper.checkObj with dwave.inverse.utils.residual_sum_squares
-def residual_sum_squares(pred: np.ndarray, obs: np.ndarray) -> float:
-    """Calculate the residual sum of squares (RSS).
-
-    Parameters
-    ----------
-    pred : numpy.ndarray
-        Predicted dataset.
-    obs : numpy.ndarray
-        Observed dataset.
-
-    Returns
-    -------
-    float
-        Residual sum of squares.
-    """
-    return np.sum(np.square((obs - pred)))
-
-
-def l2_residual(pred: np.ndarray, obs: np.ndarray) -> float:
-    return np.linalg.norm(obs - pred)  # == sqrt(residual_sum_squares)
-
-
 # TODO: replace dwave.inverse.base.geth0 with dwave.inverse.utils.get_obs
 def fwd_modeling(
     fwd_model_func: Callable[[np.ndarray], np.ndarray],
