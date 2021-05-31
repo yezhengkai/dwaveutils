@@ -1,5 +1,5 @@
 """Utility functions and classes for dwaveutils module."""
-from typing import Union
+from typing import Any, Union
 
 import numpy as np
 
@@ -71,3 +71,25 @@ class Binary2Float(object):
         float_array = np.array(binary.flatten() * high_value - (binary - 1) * low_value)
 
         return float_array
+
+
+def residual_sum_squares(pred: np.ndarray, obs: np.ndarray) -> float:
+    """Calculate the residual sum of squares (RSS).
+
+    Parameters
+    ----------
+    pred : numpy.ndarray
+        Predicted dataset.
+    obs : numpy.ndarray
+        Observed dataset.
+
+    Returns
+    -------
+    float
+        Residual sum of squares.
+    """
+    return np.sum(np.square((obs - pred)))
+
+
+def l2_residual(pred: np.ndarray, obs: np.ndarray) -> float:
+    return np.linalg.norm(obs - pred)  # equal to sqrt(residual_sum_squares(pred, obs))
