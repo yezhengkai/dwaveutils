@@ -7,6 +7,7 @@ from numpy.testing import assert_array_equal
 from dwaveutils import bl_lstsq
 
 
+# TODO: rewrite tests
 def test_discretize_matrix():
     """Test `discretize_matrix` function."""
     A = np.array([[1.1, -3.7, 4.1], [2.0, 9.9, -5.0]])
