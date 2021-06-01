@@ -35,25 +35,9 @@ class BlLstsqProblem(BaseProblem):
     def default_problem_params(self):
         return {"obj_func": l2_residual}
 
-    # TODO: use different default values for DirectSolver and IterativeSolver
     @property
     def default_qubo_params(self):
         return self._default_qubo_params[self._solver_type]
-        # return (
-        #     {
-        #         "num_bits": 4,
-        #         "fixed_point": 1,
-        #         "sign": "pn",
-        #         "eq_scaling_val": 1 / 8,
-        #     }
-        #     if self._solver_type.lower == "direct"
-        #     else {
-        #         "num_bits": 2,
-        #         "fixed_point": 1,
-        #         "sign": "p",
-        #         "eq_scaling_val": 1 / 8,
-        #     }
-        # )
 
     @property
     def required_problem_params(self):

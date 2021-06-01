@@ -10,7 +10,6 @@ import scipy.sparse as sp
 from ..utils import Binary2Float
 
 
-# TODO: replace dwave.inverse.base.geth0 with dwave.inverse.utils.get_obs
 def fwd_modeling(
     fwd_model_func: Callable[[np.ndarray], np.ndarray],
     model_params: np.ndarray,
@@ -52,7 +51,6 @@ def fwd_modeling(
         return resp_all2meas_func(resp)  # e.g. sample subset of solutions
 
 
-# TODO: replace dwave.inverse.base.flipBits with dwave.inverse.utils.flip_bits
 def flip_bits(arr: np.ndarray, flip_indicator: np.ndarray) -> np.ndarray:
     """Update the solution.
 
@@ -74,7 +72,6 @@ def flip_bits(arr: np.ndarray, flip_indicator: np.ndarray) -> np.ndarray:
     return abs(arr - flip_indicator)
 
 
-# TODO: replace dwave.inverse.getq.qubo with dwave.inverse.utils.get_qubo
 def get_qubo(
     F: np.ndarray, pred_resp: np.ndarray, obs_resp: np.ndarray, return_matrix: bool = False
 ) -> Union[defaultdict, sp.dok_matrix]:
@@ -112,7 +109,6 @@ def get_qubo(
         return Q
 
 
-# TODO: replace dwave.inverse.getq.getF with dwave.inverse.utils.get_flip_disturb_matrix instance
 def get_flip_disturb_matrix(
     fwd_model_func: Callable[[np.ndarray], np.ndarray],
     bin_model_params: np.ndarray,
@@ -168,7 +164,6 @@ def get_flip_disturb_matrix(
     return F
 
 
-# TODO: replace dwave.inverse.getq.getQ with dwave.inverse.utils.QUBO instance
 class QUBO(object):
     def __init__(
         self,
