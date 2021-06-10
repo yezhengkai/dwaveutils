@@ -28,6 +28,8 @@ class BinaryInverseIterativeSolver(BaseIterativeSolver):
             "check_num_obj": 48,
             "flip": True,
             "repeat_solution_stop_condition": False,
+            "prob_random_obj": 0.0,
+            "random_seed": None,
             "verbose": False,
         }
 
@@ -71,6 +73,12 @@ class BinaryInverseIterativeSolver(BaseIterativeSolver):
         check_num_obj = self.iter_params["check_num_obj"]
         flip = self.iter_params["flip"]
         repeat_solution_stop_condition = self.iter_params["repeat_solution_stop_condition"]
+        prob_random_obj = self.iter_params["prob_random_obj"]
+        rng = (
+            np.random.default_rng()
+            if self.iter_params["random_seed"] is None
+            else np.random.default_rng(self.iter_params["random_seed"])
+        )
         verbose = self.iter_params["verbose"]
         history = {
             "bin_model_params": [initial_bin_model_params],
@@ -88,16 +96,17 @@ class BinaryInverseIterativeSolver(BaseIterativeSolver):
 
             # get sampleset from sampler
             sampleset = self.sampler.sample_qubo(Q.toarray(), **self.sampling_params)  # type: ignore
-            sampleset = sampleset.record.sample.T  # [num_bits, num_reads]
+            sampleset = sampleset.record.sample.T  # (num_bits, num_reads)
             sampleset = np.unique(sampleset, axis=1)
 
             # get the index of the `check_num_obj` smallest qubo_obj values
             qubo_obj_array = np.diag(sampleset.T @ Q @ sampleset)
-            idx_min_qubo_obj_array = np.argpartition(qubo_obj_array, check_num_obj)[:check_num_obj]
+            real_check_num_obj = min(len(qubo_obj_array), check_num_obj)
+            idx_min_qubo_obj_array = np.argpartition(qubo_obj_array, real_check_num_obj - 1)[:real_check_num_obj]
 
             # get minimum obj and qubo_obj function value
-            obj_array = np.zeros(check_num_obj, dtype=float)
-            for i in range(check_num_obj):
+            obj_array = np.zeros(real_check_num_obj, dtype=float)
+            for i in range(real_check_num_obj):
                 if flip:
                     tmp_resp = self.problem.fwd_modeling(
                         flip_bits(current_bin_model_params, sampleset[:, idx_min_qubo_obj_array[i]])
@@ -105,7 +114,10 @@ class BinaryInverseIterativeSolver(BaseIterativeSolver):
                 else:
                     tmp_resp = self.problem.fwd_modeling(sampleset[:, idx_min_qubo_obj_array[i]])
                 obj_array[i] = self.problem.obj_func(tmp_resp, self.problem.obs_resp)
-            obj = np.min(obj_array)
+            if rng.choice([True, False], p=[prob_random_obj, 1 - prob_random_obj]):
+                obj = rng.choice(obj_array)
+            else:
+                obj = np.min(obj_array)
             idx_min_obj_value = int(idx_min_qubo_obj_array[obj_array == obj][0])
             qubo_obj = qubo_obj_array[idx_min_obj_value]
 
