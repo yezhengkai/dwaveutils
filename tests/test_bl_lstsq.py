@@ -7,54 +7,56 @@ from numpy.testing import assert_array_equal
 from dwaveutils import bl_lstsq
 
 
-# TODO: rewrite tests
-def test_discretize_matrix():
-    """Test `discretize_matrix` function."""
-    A = np.array([[1.1, -3.7, 4.1], [2.0, 9.9, -5.0]])
-    bit_value = np.array([-1 * 2 ** 0, 2 ** -1, 2 ** -2])
-    A_discrete = bl_lstsq.discretize_matrix(A, bit_value)
-    expected_result = np.array(
-        [
-            [-1.1, 0.55, 0.275, 3.7, -1.85, -0.925, -4.1, 2.05, 1.025],
-            [-2.0, 1.0, 0.5, -9.9, 4.95, 2.475, 5.0, -2.5, -1.25],
-        ]
-    )
-    assert_array_equal(A_discrete, expected_result, err_msg="Wrong discretized")
+@pytest.fixture
+def A():
+    return np.identity(3)
 
 
-def test_get_bit_value():
-    num_bits = 5
-    bit_value1 = bl_lstsq.get_bit_value(num_bits)
-    expected_result1 = np.array([-1, 0.5, 0.25, 0.125, 0.0625])
-    assert_array_equal(bit_value1, expected_result1, err_msg="Wrong bit value")
-    bit_value2 = bl_lstsq.get_bit_value(num_bits, fixed_point=2, sign="p")
-    expected_result2 = np.array([2, 1, 0.5, 0.25, 0.125])
-    assert_array_equal(bit_value2, expected_result2, err_msg="Wrong bit value")
-    bit_value3 = bl_lstsq.get_bit_value(num_bits, fixed_point=1, sign="n")
-    expected_result3 = np.array([-1, -0.5, -0.25, -0.125, -0.0625])
-    assert_array_equal(bit_value3, expected_result3, err_msg="Wrong bit value")
+@pytest.fixture
+def b():
+    return np.array([0.75, 0.5, -0.5])
 
 
-def test_q2x():
-    """Test `q_to_x` function."""
-    q = np.array([1, 0, 0, 1, 1, 1])
-    bit_value = np.array([-1 * 2 ** 0, 2 ** -1, 2 ** -2])
-    x = bl_lstsq.q2x(q, bit_value)
-    expected_result = np.array([-1, -0.25])
-    assert_array_equal(x, expected_result, err_msg="Wrong conversion")
+@pytest.fixture
+def bit_value():
+    return np.array([-1 * 2 ** 0, 2 ** -1, 2 ** -2])
 
 
-def test_bruteforce():
-    """Test `bruteforce` function."""
-    A_discrete = np.array(
+@pytest.fixture
+def A_discrete():
+    return np.array(
         [
             [-1, 0.5, 0.25, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, -1, 0.5, 0.25, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, -1, 0.5, 0.25],
         ]
     )
-    b = np.array([0.75, 0.5, -0.5])
-    bit_value = np.array([-1 * 2 ** 0, 2 ** -1, 2 ** -2])
+
+
+def test_discretize_matrix(A, A_discrete, bit_value):
+    """Test `discretize_matrix` function."""
+    A_discrete_for_test = bl_lstsq.discretize_matrix(A, bit_value)
+    assert_array_equal(A_discrete_for_test, A_discrete, err_msg="Wrong discretized")
+
+
+@pytest.mark.parametrize(
+    "num_bits, fixed_point, sign, expected_result",
+    [
+        (5, 0, "pn", np.array([-1, 0.5, 0.25, 0.125, 0.0625])),
+        (5, 2, "p", np.array([2, 1, 0.5, 0.25, 0.125])),
+        (5, 1, "n", np.array([-1, -0.5, -0.25, -0.125, -0.0625])),
+    ],
+)
+def test_get_bit_value(num_bits, fixed_point, sign, expected_result):
+    assert_array_equal(
+        bl_lstsq.get_bit_value(num_bits, fixed_point=fixed_point, sign=sign),
+        expected_result,
+        err_msg="Wrong bit value",
+    )
+
+
+def test_bruteforce(A_discrete, b, bit_value):
+    """Test `bruteforce` function."""
     best_q, best_x, min_norm = bl_lstsq.bruteforce(A_discrete, b, bit_value)
     expected_q = np.array([0, 1, 1, 0, 1, 0, 1, 1, 0])
     expected_x = np.array([0.75, 0.5, -0.5])
@@ -64,18 +66,9 @@ def test_bruteforce():
     assert min_norm == expected_norm
 
 
-def test_get_qubo():
+def test_get_qubo(A_discrete, b):
     """Test `get_qubo` function."""
-    A_discrete = np.array(
-        [
-            [-1, 0.5, 0.25, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, -1, 0.5, 0.25, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, -1, 0.5, 0.25],
-        ]
-    )
-    b = np.array([0.75, 0.5, -0.5])
     Q = bl_lstsq.get_qubo(A_discrete, b, eq_scaling_val=1 / 2)
-    print(Q)
     expected_Q = defaultdict(
         int,
         {
