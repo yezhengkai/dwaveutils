@@ -1,0 +1,6 @@
+name: dwaveutil-dev
+dependencies:
+  - python>=3.8
+  - pip
+  - pip:
+    - -r requirements.txt
